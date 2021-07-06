@@ -1,31 +1,36 @@
-const http = require('http');
+const http = require('http')
+const path = require('path')
+const fs = require('fs')
 
-// импортируем модуль path
-const path = require('path');
-
-// импортируем модуль fs
-const fs = require('fs');
-
-// создаем переменную сервера и принимаем в колбек нужные параметры
 const server = http.createServer((req, res) => {
-    // отправляем статус 200 и заголовок с указанием типа ответа
-    res.writeHead(200, {
-        "Content-type": "text/html"
-    });
+    let pageName = ''
+    if (req.url === '/') {
+        pageName = 'index.html'
+    }
 
-    // читаем содержимое файла
-    fs.readFile(path.resolve(__dirname, 'pages', 'index.html'), (err, data) => {
-        // если нет ошибок, то...
-        if(!err) {
-            // ...формируем тело ответа добавив в него содержимое html-файла
-            res.write(data.toString());
-        }
+    if (req.url === '/about') {
+        pageName = 'about.html'
+    }
 
-        // завершаем отправку ответа внутри колбек функции, т.к. write()
-        // не может вызываться после end().
-        res.end();
-    })
-});
+    if (req.url === '') {
+        res.writeHead(404, {
+            'Content-type':'text/html'
+        })
 
-// слушаем созданный сервер на 3000 порту...
+        res.write('Ошибка, страница не найдена')
+
+        res.end()
+    } else {
+        fs.readFile(path.resolve(__dirname, 'pages', pageName), (err, data) => {
+            res.writeHead(200, {
+                'Content-type':'text/html'
+            })
+
+            res.write(data.toString())
+
+            res.end()
+        })
+    }
+})
+
 server.listen(3000)
